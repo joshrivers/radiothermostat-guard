@@ -1,0 +1,24 @@
+{
+  "name": "radiothermostat",
+  "version": "1.0.0",
+  "description": "Control our Thermostat",
+  "main": "index.js",
+  "dependencies": {
+    "bluebird": "^3.5.2",
+    "express": "^4.15.3",
+    "lodash": "^4.17.4",
+    "nodemon": "^1.11.0",
+    "request-promise": "^4.2.1",
+    "rtstat": "0.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^1.11.0"
+  },
+  "scripts": {
+    "start": "node autoheatcool.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "monitor": "nodemon index.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
