@@ -8,5 +8,5 @@ RUN npm install && npm cache clean --force
 COPY . /usr/src/app
 
 ENV THERMOSTAT_IP unset
-ENV POLLING_DELAY 900000
+ENV POLLING_DELAY 600000
 CMD [ "npm", "start" ]

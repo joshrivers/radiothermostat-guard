@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
-const rp = require("request-promise");
+const rp = require('request-promise');
 const createPostOptions = function(url, body) {
     return {
-        method: "POST",
+        method: 'POST',
         uri: url,
         body: body,
         json: true
@@ -57,14 +57,18 @@ module.exports.setFanCirculate = function(thermostatIpAddress) {
     return requestPost(`http://${thermostatIpAddress}/tstat`, { tmode: 1 });
 };
 
+module.exports.reboot = function(thermostatIpAddress) {
+    return requestPost(`http://${thermostatIpAddress}/sys/command`, { command: 'reboot' });
+};
+
 module.exports.sys_mode = function(thermostatIpAddress, preferredMode) {
-    if (preferredMode == "Normal") {
+    if (preferredMode == 'Normal') {
         return requestPost(`http://${thermostatIpAddress}/sys/mode`, { mode: 1 });
     }
-    if (preferredMode == "Provisioning") {
+    if (preferredMode == 'Provisioning') {
         return requestPost(`http://${thermostatIpAddress}/sys/mode`, { mode: 0 });
     }
-    return Promise.reject("Specified mode not recognized");
+    return Promise.reject('Specified mode not recognized');
 };
 
 module.exports.sys_name = function(thermostatIpAddress, newName) {

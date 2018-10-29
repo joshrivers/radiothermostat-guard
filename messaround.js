@@ -1,8 +1,8 @@
 // const express = require("express");
 // const findThermostat = require("./thermostat");
-const forecastio = require("./forecastio");
+const forecastio = require('./forecastio');
 // const discover = require("./radiothermostat").discover;
-const radiothermostat = require("./radiothermostat");
+const radiothermostat = require('./radiothermostat');
 // const app = express();
 let address = process.env.THERMOSTAT_IP;
 
@@ -24,25 +24,26 @@ console.log(address);
 //   });
 // });
 
-// app.get('/sys', function(req, res) {
-//   radiothermostat.get.sys(address).then(result => {
-//     console.log(result);
-//     res.send(result);
-//   });
-// });
-
-radiothermostat.get.tstat(address).then(result => {
+radiothermostat.get.sys(address).then(result => {
   console.log(result);
-  result = JSON.parse(result);
-  if (result.tmode == 1) {
-    console.log("Heat");
-  }
-  if (result.tmode == 2) {
-    console.log("Cool");
-  }
-  console.log(`Indoor Temperature is ${result.temp}`);
-  radiothermostat.post.setFurnaceOn(address);
 });
+
+radiothermostat.post.reboot(address).then(result => {
+  console.log(result);
+});
+
+// radiothermostat.get.tstat(address).then(result => {
+//   console.log(result);
+//   result = JSON.parse(result);
+//   if (result.tmode == 1) {
+//     console.log("Heat");
+//   }
+//   if (result.tmode == 2) {
+//     console.log("Cool");
+//   }
+//   console.log(`Indoor Temperature is ${result.temp}`);
+//   radiothermostat.post.setFurnaceOn(address);
+// });
 
 // app.get('/tstat/ttemp', function(req, res) {
 //   radiothermostat.get.tstat_ttemp(address).then(result => {

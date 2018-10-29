@@ -1,17 +1,16 @@
 const express = require('express');
-const findThermostat = require('./thermostat');
 const forecastio = require('./forecastio');
 const discover = require('./radiothermostat').discover;
 const radiothermostat = require('./radiothermostat');
 const app = express();
 let address = '0.0.0.0';
 
-discover().then((addresses) => {
+discover().then(addresses => {
   address = addresses[0];
-
+  console.log('Serving for RadioThermostat at ' + address);
   app.get('/', function(req, res) {
-    res.send('Radio Thermostat Interface')
-  })
+    res.send('Radio Thermostat Interface');
+  });
 
   app.get('/tstat/datalog', function(req, res) {
     radiothermostat.get.tstat_datalog(address).then(result => {
@@ -98,6 +97,6 @@ discover().then((addresses) => {
   });
 
   app.listen(3000, function() {
-    console.log('Radio Thermostat Interface listening on port 3000!')
+    console.log('Radio Thermostat Interface listening on port 3000!');
   });
 });
