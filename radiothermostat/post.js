@@ -10,7 +10,17 @@ const createPostOptions = function(url, body) {
     };
 };
 const requestPost = function(url, body) {
+    // console.log(`Posting to ${url}`);
     return rp(createPostOptions(url, body));
+    // return rp(createPostOptions(url, body))
+    //     .then(result => {
+    //         console.log(result);
+    //         return result;
+    //     })
+    //     .catch(err => {
+    //         console.error(err);
+    //         throw err;
+    //     });
 };
 
 module.exports.activateHold = function(thermostatIpAddress) {
