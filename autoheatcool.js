@@ -73,6 +73,7 @@ const isOverrideExpired = currentThermostatState => {
   if (moment().isAfter(overrideExpiryEpoch)) {
     return true;
   }
+  return false;
 };
 
 const queryThermostat = async function() {
