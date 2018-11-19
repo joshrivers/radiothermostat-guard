@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 module.exports.discover = require('./discover');
 module.exports.get = require('./get');

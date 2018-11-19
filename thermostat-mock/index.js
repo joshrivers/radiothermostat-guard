@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+
 const app = express();
 const port = 80;
 
@@ -15,13 +16,13 @@ app.get('/tstat', (req, res) => {
     t_cool: 68,
     time: {
       hour: 10,
-      minute: 10
-    }
+      minute: 10,
+    },
   });
 });
 
 app.post('/tstat', (req, res) => {
-  console.log('Post /tstat ' + JSON.stringify(req.body));
+  console.log(`Post /tstat ${JSON.stringify(req.body)}`);
   res.send({});
 });
 

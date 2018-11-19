@@ -1,0 +1,11 @@
+extends: airbnb-base
+parserOptions:
+  sourceType: 'script'
+env:
+  mocha: true
+rules:
+  strict: ['error', 'safe']
+  comma-dangle: 0
+  arrow-parens: ['error', 'always']
+  func-names: ['error', 'as-needed']
+  no-constant-condition: ["error", { "checkLoops": false }]

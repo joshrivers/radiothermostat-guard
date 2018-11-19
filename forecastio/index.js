@@ -1,11 +1,13 @@
-"use strict";
+'use strict';
 
-const rp = require("request-promise"),
-  lat = "45.5663063",
-  long = "-122.837492",
-  key = process.env.DARKSKY_API_KEY,
-  url = `https://api.darksky.net/forecast/${key}/${lat},${long}`;
+const rp = require('request-promise');
 
-module.exports.forecast = function() {
-  return rp.get(url);
-};
+const lat = '45.5663063';
+
+const long = '-122.837492';
+
+const key = process.env.DARKSKY_API_KEY;
+
+const url = `https://api.darksky.net/forecast/${key}/${lat},${long}`;
+
+module.exports.forecast = () => rp.get(url);

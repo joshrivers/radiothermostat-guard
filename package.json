@@ -9,14 +9,22 @@
     "lodash": "^4.17.11",
     "moment": "^2.22.2",
     "request-promise": "^4.2.2",
-    "rtstat": "0.0.2"
+    "rtstat": "0.0.2",
+    "winston": "^3.1.0"
   },
   "devDependencies": {
-    "nodemon": "^1.18.5"
+    "chai": "^4.2.0",
+    "eslint": "^5.9.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "mocha": "^5.2.0",
+    "nodemon": "^1.18.5",
+    "proxyquire": "^2.1.0"
   },
   "scripts": {
     "start": "node autoheatcool.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha && eslint --fix '**/*.js'",
+    "lint": "eslint --fix '**/*.js'",
     "monitor": "nodemon index.js"
   },
   "author": "",

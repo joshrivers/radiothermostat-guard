@@ -1,17 +1,20 @@
+'use strict';
+
 const rtstat = require('rtstat');
 const _ = require('lodash');
+const logger = require('./src/logger');
 
 module.exports = rtstat
   .findThermostats()
-  .then((thermostats)=>{
-    console.log(thermostats);
-    var foundThermostat = {};
-    _.each(thermostats, (thermostat, id)=>{
-      console.log(`Thermostat ${id} found at ${thermostat.ipAddress}`);
-      foundThermostat = rtstat.tstat(thermostat.ipAddress)
+  .then((thermostats) => {
+    logger.info(thermostats);
+    let foundThermostat = {};
+    _.each(thermostats, (thermostat, id) => {
+      logger.info(`Thermostat ${id} found at ${thermostat.ipAddress}`);
+      foundThermostat = rtstat.tstat(thermostat.ipAddress);
     });
     return foundThermostat;
-  })
+  });
 
 
 // rtstat

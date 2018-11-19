@@ -1,33 +1,28 @@
 'use strict';
 
-const radiothermostat = require('./radiothermostat');
 const Promise = require('bluebird');
 const moment = require('moment');
 const assert = require('assert');
-let address = process.env.THERMOSTAT_IP;
-let delay = parseInt(process.env.POLLING_DELAY);
+const radiothermostat = require('./radiothermostat');
+const logger = require('./src/logger');
+
+const address = process.env.THERMOSTAT_IP;
+let delay = parseInt(process.env.POLLING_DELAY, 10);
 let overrideExpiryEpoch = 0;
 
 if (address === 'unset' || !address) {
-  console.error('THERMOSTAT_IP address environment variable not set.');
+  logger.error('THERMOSTAT_IP address environment variable not set.');
   process.exit(1);
 } else {
-  console.log(`Connecting to RadioThermostat at ${address}.`);
+  logger.info(`Connecting to RadioThermostat at ${address}.`);
 }
 
 if (!delay) {
   delay = 3000;
 }
 
-process.on('unhandledRejection', error => {
-  // Will print "unhandledRejection err is not defined"
-  console.error('unhandledRejection', error);
-});
-
-const getTemperatureFromThermostatState = currentThermostatState => {
-  return currentThermostatState.temp;
-};
-const getHoldStatusFromThermostatState = currentThermostatState => {
+const getTemperatureFromThermostatState = (currentThermostatState) => currentThermostatState.temp;
+const getHoldStatusFromThermostatState = (currentThermostatState) => {
   if (currentThermostatState.hold === 0) {
     return 'Off';
   }
@@ -36,7 +31,7 @@ const getHoldStatusFromThermostatState = currentThermostatState => {
   }
   return 'invalid';
 };
-const getHeatAcModeFromThermostatState = currentThermostatState => {
+const getHeatAcModeFromThermostatState = (currentThermostatState) => {
   if (currentThermostatState.tmode === 0) {
     return 'Off';
   }
@@ -52,15 +47,15 @@ const getHeatAcModeFromThermostatState = currentThermostatState => {
   return 'invalid';
 };
 
-const isThermostatBeingOverridden = currentThermostatState => {
+const isThermostatBeingOverridden = (currentThermostatState) => {
   const heatAcMode = getHeatAcModeFromThermostatState(currentThermostatState);
-  if (heatAcMode === 'Heat' && currentThermostatState.t_heat != 68) {
+  if (heatAcMode === 'Heat' && currentThermostatState.t_heat !== 68) {
     if (!overrideExpiryEpoch) {
       overrideExpiryEpoch = moment().add(4, 'hours');
     }
     return true;
   }
-  if (heatAcMode === 'Cool' && currentThermostatState.t_cool != 72) {
+  if (heatAcMode === 'Cool' && currentThermostatState.t_cool !== 72) {
     if (!overrideExpiryEpoch) {
       overrideExpiryEpoch = moment().add(4, 'hours');
     }
@@ -69,14 +64,14 @@ const isThermostatBeingOverridden = currentThermostatState => {
   overrideExpiryEpoch = 0;
   return false;
 };
-const isOverrideExpired = currentThermostatState => {
+const isOverrideExpired = () => {
   if (moment().isAfter(overrideExpiryEpoch)) {
     return true;
   }
   return false;
 };
 
-const queryThermostat = async function() {
+const queryThermostat = async function () {
   const currentThermostatStateString = await radiothermostat.get.tstat(address);
   const currentThermostatState = JSON.parse(currentThermostatStateString);
   const extractedResult = {
@@ -120,23 +115,25 @@ const queryThermostat = async function() {
   if (overrideExpiryEpoch) {
     expiryTime = `. Expring ${overrideExpiryEpoch.fromNow()}`;
   }
-  console.log(
-    `Current Temperature is ${extractedResult.temperature}, mode is ${extractedResult.heatAcMode}, hold is ${extractedResult.hold}. Time is ${currentThermostatState
-      .time.hour}:${currentThermostatState.time
-      .minute}. Override is ${extractedResult.manualOverride}, expired is ${extractedResult.overrideExpired}${expiryTime}  ${currentThermostatStateString}`
+  logger.info(
+    `Current Temperature is ${extractedResult.temperature}, mode is ${extractedResult.heatAcMode}, hold is ${
+      extractedResult.hold
+    }. Time is ${currentThermostatState.time.hour}:${currentThermostatState.time.minute}. Override is ${
+      extractedResult.manualOverride
+    }, expired is ${extractedResult.overrideExpired}${expiryTime}  ${currentThermostatStateString}`
   );
   return extractedResult;
 };
 
-const enforceState = async function(thermostatState) {
+const enforceState = async function (thermostatState) {
   try {
     if (thermostatState.temperature >= 72 && thermostatState.heatAcMode === 'Heat') {
-      console.log('Cooling down the house.');
+      logger.info('Cooling down the house.');
       await radiothermostat.post.setTargetCooling(address, 72);
       await radiothermostat.post.activateHold(address);
     }
     if (thermostatState.temperature <= 68 && thermostatState.heatAcMode === 'Cool') {
-      console.log('Heating up the house.');
+      logger.info('Heating up the house.');
       await radiothermostat.post.setTargetHeat(address, 68);
       await radiothermostat.post.activateHold(address);
     }
@@ -149,20 +146,22 @@ const enforceState = async function(thermostatState) {
       }
     }
   } catch (err) {
-    console.error(err);
+    logger.error(err);
   }
 };
 
-const mainLoop = async function() {
+const mainLoop = async function () {
+  /* eslint-disable no-await-in-loop */
   while (true) {
     try {
       const thermostatState = await queryThermostat();
       await enforceState(thermostatState);
     } catch (err) {
-      console.error(err);
+      logger.error(err);
     }
     await Promise.delay(delay);
   }
+  /* eslint-enable no-await-in-loop */
 };
 
 mainLoop();
