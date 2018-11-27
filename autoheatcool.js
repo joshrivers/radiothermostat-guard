@@ -49,7 +49,7 @@ const getHeatAcModeFromThermostatState = (currentThermostatState) => {
 
 const isThermostatBeingOverridden = (currentThermostatState) => {
   const heatAcMode = getHeatAcModeFromThermostatState(currentThermostatState);
-  if (heatAcMode === 'Heat' && currentThermostatState.t_heat !== 68) {
+  if (heatAcMode === 'Heat' && currentThermostatState.t_heat !== 69) {
     if (!overrideExpiryEpoch) {
       overrideExpiryEpoch = moment().add(4, 'hours');
     }
@@ -132,9 +132,9 @@ const enforceState = async function (thermostatState) {
       await radiothermostat.post.setTargetCooling(address, 72);
       await radiothermostat.post.activateHold(address);
     }
-    if (thermostatState.temperature <= 68 && thermostatState.heatAcMode === 'Cool') {
+    if (thermostatState.temperature <= 69 && thermostatState.heatAcMode === 'Cool') {
       logger.info('Heating up the house.');
-      await radiothermostat.post.setTargetHeat(address, 68);
+      await radiothermostat.post.setTargetHeat(address, 69);
       await radiothermostat.post.activateHold(address);
     }
     if (thermostatState.manualOverride && thermostatState.overrideExpired) {
@@ -142,7 +142,7 @@ const enforceState = async function (thermostatState) {
         await radiothermostat.post.setTargetCooling(address, 72);
       }
       if (thermostatState.heatAcMode === 'Heat') {
-        await radiothermostat.post.setTargetHeat(address, 68);
+        await radiothermostat.post.setTargetHeat(address, 69);
       }
     }
   } catch (err) {
