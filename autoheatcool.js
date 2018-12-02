@@ -3,23 +3,13 @@
 const Promise = require('bluebird');
 const moment = require('moment');
 const assert = require('assert');
-const radiothermostat = require('./radiothermostat');
 const logger = require('./src/logger');
+const config = require('./src/config');
+const radiothermostatClientFactory = require('./src/radiothermostatClient');
 
-const address = process.env.THERMOSTAT_IP;
-let delay = parseInt(process.env.POLLING_DELAY, 10);
+const radiothermostatClient = radiothermostatClientFactory(config.thermostatIp);
+const delay = config.pollingDelay;
 let overrideExpiryEpoch = 0;
-
-if (address === 'unset' || !address) {
-  logger.error('THERMOSTAT_IP address environment variable not set.');
-  process.exit(1);
-} else {
-  logger.info(`Connecting to RadioThermostat at ${address}.`);
-}
-
-if (!delay) {
-  delay = 3000;
-}
 
 const getTemperatureFromThermostatState = (currentThermostatState) => currentThermostatState.temp;
 const getHoldStatusFromThermostatState = (currentThermostatState) => {
@@ -72,8 +62,7 @@ const isOverrideExpired = () => {
 };
 
 const queryThermostat = async function () {
-  const currentThermostatStateString = await radiothermostat.get.tstat(address);
-  const currentThermostatState = JSON.parse(currentThermostatStateString);
+  const currentThermostatState = await radiothermostatClient.getCurrentState();
   const extractedResult = {
     temperature: getTemperatureFromThermostatState(currentThermostatState),
     hold: getHoldStatusFromThermostatState(currentThermostatState),
@@ -120,7 +109,7 @@ const queryThermostat = async function () {
       extractedResult.hold
     }. Time is ${currentThermostatState.time.hour}:${currentThermostatState.time.minute}. Override is ${
       extractedResult.manualOverride
-    }, expired is ${extractedResult.overrideExpired}${expiryTime}  ${currentThermostatStateString}`
+    }, expired is ${extractedResult.overrideExpired}${expiryTime}`, currentThermostatState
   );
   return extractedResult;
 };
@@ -129,20 +118,18 @@ const enforceState = async function (thermostatState) {
   try {
     if (thermostatState.temperature >= 72 && thermostatState.heatAcMode === 'Heat') {
       logger.info('Cooling down the house.');
-      await radiothermostat.post.setTargetCooling(address, 72);
-      await radiothermostat.post.activateHold(address);
+      await radiothermostatClient.setCoolingModeTargetAndHold(72);
     }
     if (thermostatState.temperature <= 69 && thermostatState.heatAcMode === 'Cool') {
       logger.info('Heating up the house.');
-      await radiothermostat.post.setTargetHeat(address, 69);
-      await radiothermostat.post.activateHold(address);
+      await radiothermostatClient.setHeatingModeTargetAndHold(69);
     }
     if (thermostatState.manualOverride && thermostatState.overrideExpired) {
       if (thermostatState.heatAcMode === 'Cool') {
-        await radiothermostat.post.setTargetCooling(address, 72);
+        await radiothermostatClient.setCoolingModeTargetAndHold(72);
       }
       if (thermostatState.heatAcMode === 'Heat') {
-        await radiothermostat.post.setTargetHeat(address, 69);
+        await radiothermostatClient.setHeatingModeTargetAndHold(69);
       }
     }
   } catch (err) {
